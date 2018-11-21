@@ -10,4 +10,4 @@ Utilities for deploying Django app (nginx/app, rabbitmq, celery worker) with AWS
     * `services/`
         * `load_balanced` - ECS service connected to load balancer target group (e.g. nginx/web)
         * `discoverable` - ECS service with service discovery (e.g. RabbitMQ)
-        * `generic` - ECS service with no load balancer or service discovery
+        * `generic` - ECS service with no load balancer or service discovery (e.g. Celery worker)
