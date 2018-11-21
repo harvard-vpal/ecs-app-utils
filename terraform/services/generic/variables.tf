@@ -1,4 +1,4 @@
-# variables for load balanced service module
+# variables for generic service module
 
 variable "vpc_id" {
   description = "Id of VPC associated with ECS cluster, e.g. vpc-xxxxx "
@@ -37,8 +37,4 @@ variable "cpu" {
 variable "count" {
   description = "Desired task count"
   default = 1
-}
-
-variable "target_group_arn" {
-  description = "ARN of ALB target group to associate service with"
 }

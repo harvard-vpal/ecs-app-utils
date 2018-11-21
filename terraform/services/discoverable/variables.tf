@@ -1,7 +1,7 @@
-# variables for load balanced service module
+# variables for rabbit service module
 
 variable "vpc_id" {
-  description = "Id of VPC associated with ECS cluster, e.g. vpc-xxxxx "
+  description = "Id of VPC associated with ECS cluster, e.g. vpc-xxxxx"
 }
 
 variable "name" {
@@ -39,6 +39,10 @@ variable "count" {
   default = 1
 }
 
-variable "target_group_arn" {
-  description = "ARN of ALB target group to associate service with"
+variable "service_discovery_namespace_id" {
+  description = "Service discovery namespace id"
+}
+
+variable "service_label" {
+  description = "service label to use for service discovery"
 }

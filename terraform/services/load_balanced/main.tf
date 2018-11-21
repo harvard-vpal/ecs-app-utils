@@ -9,7 +9,7 @@ data "aws_iam_role" "task_execution" {
 }
 
 resource "aws_ecs_task_definition" "main" {
-  family                = "${var.project}-${var.env_label}-web"
+  family                = "${var.name}"
   container_definitions = "${var.container_definitions}"
   execution_role_arn = "${data.aws_iam_role.task_execution.arn}" # required for awslogs
   task_role_arn = "${var.role_arn}"
@@ -20,7 +20,7 @@ resource "aws_ecs_task_definition" "main" {
 }
 
 resource "aws_ecs_service" "main" {
-  name            = "${var.project}-${var.env_label}-web"
+  name            = "${var.name}"
   cluster         = "${var.cluster_name}"
   task_definition = "${aws_ecs_task_definition.main.arn}"
   desired_count   = "${var.count}"
