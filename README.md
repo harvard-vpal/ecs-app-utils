@@ -6,8 +6,8 @@ Utilities for deploying Django app (nginx/app, rabbitmq, celery worker) with AWS
 
 ### Terraform modules
 * `terraform/`
-    * `network/` - load balancer, routing, other network resources
+    * `network/` - load balancer, target group, routing, other network resources
     * `services/`
-        * `web` - nginx/web ECS service
-        * `rabbit` - RabbitMQ ECS service
-        * `worker` - celery worker ECS service
+        * `load_balanced` - ECS service connected to load balancer target group (e.g. nginx/web)
+        * `discoverable` - ECS service with service discovery (e.g. RabbitMQ)
+        * `generic` - ECS service with no load balancer or service discovery
