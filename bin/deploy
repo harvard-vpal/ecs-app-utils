@@ -1,0 +1,35 @@
+#!/usr/bin/env python
+
+import argparse
+from utils import build_images, push_images, deploy, initialize
+
+
+def parser():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('action', type=str, default='all', choices=['init', 'build', 'push', 'plan', 'apply', 'all'])
+    parser.add_argument('--env', type=str, required=True, help='label of environment to deploy to')
+    parser.add_argument('--tag', type=str, help='version tag to deploy')
+    parser.add_argument('--apply', action='store_true', help='apply terraform config')
+    return parser
+
+
+def main(env, tag=None, apply=False, action='all'):
+    if action == 'init':
+        initialize(env)
+    if action == 'build':
+        build_images(tag=tag)
+    if action == 'push':
+        push_images(tag=tag)
+    if action == 'plan':
+        deploy(env=env, tag=tag, apply=False)
+    if action == 'apply':
+        deploy(env=env, tag=tag, apply=True)
+    if action == 'all':
+        build_images(tag=tag)
+        push_images(tag=tag)
+        deploy(env=env, tag=tag, apply=apply)
+
+
+if __name__ == '__main__':
+    args = parser().parse_args()
+    main(args.env, tag=args.tag, apply=args.apply, action=args.action)
