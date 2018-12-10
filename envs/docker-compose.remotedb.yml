@@ -1,0 +1,18 @@
+# docker-compose config for environment running local container but connected to remote db
+# can be used for prod database migrations or interactive shell against real data
+# settings file {ENV_LABEL}.py is mapped inside config.settings.eb as {ENV_LABEL}_remote.py
+# Assumes modified settings are available in ./envs/remotedb/
+# Usage: specify ENV_LABEL, TAG, and DJANGO_SETTINGS_MODULE in shell before using
+
+
+version: '3'
+services:
+  app:
+    image: ${APP_IMAGE}:${TAG}
+    volumes:
+      # mount AWS credential info (needed for getting ssm params)
+      - ${HOME}/.aws/credentials:/root/.aws/credentials
+      # mount modified settings (includes remote db info but removes other aws/prod specific settings)
+      - ${PWD}/envs/remotedb/${ENV_LABEL}.py:/app/config/settings/eb/${ENV_LABEL}_remote.py
+    environment:
+      - DJANGO_SETTINGS_MODULE=${DJANGO_SETTINGS_MODULE}
