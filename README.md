@@ -83,19 +83,19 @@ Example usage of `bin/deploy` command line entrypoint:
 deploy build --env dev
 
 # Checkout the app code with the specified version and tag image with that tag
-deploy build --env dev --tag 1.0.0
+deploy build --tag 1.0.0
 
 # Push images with the specified tag to ECR repositories
-deploy push --env dev
+deploy push --tag 1.0.0
 
 # Run 'terraform plan' with specified image tag against 'dev' environment
-deploy plan --env dev --tag 1.0.0
+deploy plan --tag 1.0.0 --env dev
 
 # Run 'terraform apply' with specified image tag against 'dev' environment
-deploy apply --env dev --tag 1.0.0
+deploy apply --tag 1.0.0 --env dev
 
 # Build, push, and apply
-deploy all --env dev --tag 1.0.0
+deploy all --tag 1.0.0 --env dev
 ```
 
 ### Remote db shell

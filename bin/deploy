@@ -4,32 +4,54 @@ import argparse
 from utils import build_images, push_images, deploy, initialize
 
 
-def parser():
+def all(tag=None, env=None, apply=None):
+    """
+    functionality for 'all' subcommand
+    """
+    build_images(tag=tag)
+    push_images(tag=tag)
+    deploy(env=env, tag=tag, apply=apply)
+
+
+def create_parser():
     parser = argparse.ArgumentParser()
-    parser.add_argument('action', type=str, default='all', choices=['init', 'build', 'push', 'plan', 'apply', 'all'])
-    parser.add_argument('--env', type=str, required=True, help='label of environment to deploy to')
-    parser.add_argument('--tag', type=str, help='version tag to deploy')
-    parser.add_argument('--apply', action='store_true', help='apply terraform config')
+    subparsers = parser.add_subparsers()
+
+    # parent parser with tag argument
+    tag_parser = argparse.ArgumentParser(add_help=False)
+    tag_parser.add_argument('--tag', type=str, help='version tag to deploy')
+
+    # parent parser with env argument
+    env_parser = argparse.ArgumentParser(add_help=False)
+    env_parser.add_argument('--env', type=str, required=True, help='label of environment to deploy to')
+
+    # init
+    parser_init = subparsers.add_parser('init')
+    parser_init.set_defaults(func=initialize)
+
+    # build
+    parser_build = subparsers.add_parser('build', parents=[tag_parser])
+    parser_build.set_defaults(func=build_images)
+
+    # push
+    parser_push = subparsers.add_parser('push', parents=[tag_parser])
+    parser_push.set_defaults(func=push_images)
+
+    # plan
+    parser_plan = subparsers.add_parser('plan', parents=[tag_parser, env_parser])
+    parser_plan.set_defaults(func=deploy)
+
+    # apply
+    parser_apply = subparsers.add_parser('apply', parents=[tag_parser, env_parser])
+    parser_apply.set_defaults(func=deploy)
+
+    # all
+    parser_all = subparsers.add_parser('all', parents=[tag_parser, env_parser])
+    parser_apply.set_defaults(func=all)
+
     return parser
 
 
-def main(env, tag=None, apply=False, action='all'):
-    if action == 'init':
-        initialize(env)
-    if action == 'build':
-        build_images(tag=tag)
-    if action == 'push':
-        push_images(tag=tag)
-    if action == 'plan':
-        deploy(env=env, tag=tag, apply=False)
-    if action == 'apply':
-        deploy(env=env, tag=tag, apply=True)
-    if action == 'all':
-        build_images(tag=tag)
-        push_images(tag=tag)
-        deploy(env=env, tag=tag, apply=apply)
-
-
 if __name__ == '__main__':
-    args = parser().parse_args()
-    main(args.env, tag=args.tag, apply=args.apply, action=args.action)
+    args = vars(create_parser().parse_args())
+    args.pop('func')(**args)
