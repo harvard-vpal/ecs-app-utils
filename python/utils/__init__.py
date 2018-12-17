@@ -100,8 +100,6 @@ def deploy(env, tag=None, apply=False):
         f'-var-file=terraform.{env}.tfvars '
         f'-var app_image={app_image}:{tag} '
         f'-var nginx_image={nginx_image}:{tag} '
-        # '-target=module.web_service '
-        # '-target=module.worker_service'
         .split(), cwd=wd)
 
 
