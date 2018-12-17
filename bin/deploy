@@ -47,7 +47,7 @@ def create_parser():
 
     # all
     parser_all = subparsers.add_parser('all', parents=[tag_parser, env_parser])
-    parser_apply.set_defaults(func=all)
+    parser_all.set_defaults(func=all)
 
     return parser
 
