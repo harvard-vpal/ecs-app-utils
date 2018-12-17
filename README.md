@@ -97,17 +97,3 @@ deploy apply --tag 1.0.0 --env dev
 # Build, push, and apply
 deploy all --tag 1.0.0 --env dev
 ```
-
-### Remote db shell
-Example: Open remote shell using v.1.0.1 app image (pre-built) against dev database
-```
-set -a; source .env; set +a; \
-    TAG=v.1.0.1 \
-    ENV_LABEL=dev \
-    DJANGO_SETTINGS_MODULE=config.settings.eb.dev_remote \
-    docker-compose \
-        -f docker-compose.yml \
-        -f $UTILS_CONTEXT/envs/docker-compose.remotedb.yml \
-        run app bash
-```
-Note: `set -a; source .env; set +a;` exports `$UTILS_CONTEXT` from `.env` file for use in docker-compose path. 
