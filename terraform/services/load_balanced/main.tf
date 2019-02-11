@@ -38,3 +38,7 @@ resource "aws_ecs_service" "main" {
     assign_public_ip = true
   }
 }
+
+output "service_name" {
+  value = "${aws_ecs_service.main.name}"
+}
