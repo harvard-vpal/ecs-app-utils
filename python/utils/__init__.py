@@ -1,16 +1,25 @@
 import os
+import logging
 import subprocess
 from subprocess import run
 import docker
 from git import Repo, TagReference, Head
 from contextlib import contextmanager
+import boto3
+
+logger = logging.getLogger(__name__)
 
 # relative path containing terraform config
+# TODO make this configurable
 TERRAFORM_WORKING_DIRECTORY = 'terraform'
 
+# Uses build/app/src as build context by default, but a relative subdirectory within app source can be specified
+APP_REPO = os.environ['APP_REPO']
+APP_BUILD_CONTEXT = os.environ.get('APP_BUILD_CONTEXT', 'build/app/src')
+NGINX_BUILD_CONTEXT = os.environ.get('NGINX_BUILD_CONTEXT', 'build/nginx')
 
 def get_repo(path=None):
-    return Repo(path if path else os.environ['APP_REPO'])
+    return Repo(path if path else APP_REPO)
 
 
 def build_app_image(tag='latest'):
@@ -24,9 +33,8 @@ def build_app_image(tag='latest'):
     client = docker.from_env()
     image = os.environ['APP_IMAGE']
     # Uses build/app/src as build context by default, but a relative subdirectory within app source can be specified
-    build_context = os.path.join('build/app/src', os.environ.get('APP_SUBDIR', ''))
     args = dict(
-        path=build_context,
+        path=APP_BUILD_CONTEXT,
         tag='{}:{}'.format(image, tag)
     )
     if os.environ.get('APP_DOCKERFILE'):
@@ -34,12 +42,18 @@ def build_app_image(tag='latest'):
 
     print("Building image: {}:{}".format(image, tag))
 
-    client.images.build(**args)
+    try:
+        client.images.build(**args)
+    except docker.errors.BuildError as e:
+        for line in e.build_log:
+            if 'stream' in line:
+                logger.error(line['stream'].strip())
+        raise
 
 
 def build_nginx_image(tag='latest'):
     """
-    Build nginx timage
+    Build nginx image
     :param tag: tag to use for image uri
     :return:
     """
@@ -48,11 +62,17 @@ def build_nginx_image(tag='latest'):
     app_image = os.environ['APP_IMAGE']
     print("Building image: {}:{}".format(nginx_image, tag))
 
-    client.images.build(
-        path='/home/build/nginx',
-        tag=f'{nginx_image}:{tag}',
-        buildargs={'APP_IMAGE': f'{app_image}:{tag}'}
-    )
+    try:
+        client.images.build(
+            path=NGINX_BUILD_CONTEXT,
+            tag=f'{nginx_image}:{tag}',
+            buildargs={'APP_IMAGE': f'{app_image}:{tag}'}
+        )
+    except docker.errors.BuildError as e:
+        for line in e.build_log:
+            if 'stream' in line:
+                logger.error(line['stream'].strip())
+        raise
 
 
 def build_images(tag=None):
@@ -88,12 +108,12 @@ def push_images(tag='latest'):
     )
 
 
-def deploy(env, tag=None, apply=False):
+def deploy(env, tag=None):
     tag = tag or 'latest'
     wd = TERRAFORM_WORKING_DIRECTORY
     app_image = os.environ['APP_IMAGE']
     nginx_image = os.environ['NGINX_IMAGE']
-    action = 'apply' if apply else 'plan'
+    action = 'apply'  # vs plan
 
     run('terraform workspace select {}'.format(env).split(), cwd=wd)
     run(f'terraform {action} '
