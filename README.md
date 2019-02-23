@@ -30,6 +30,41 @@ The Terraform config assumes a couple of AWS resources are manually created prio
 * SSL certificate (`ssl_certificate_arm` is the ARN of the certificate)
 * Cloudwatch log group
 
+### Recommended docker-compose configuration
+A docker-compose file should be created, outside of the ecs-app-utils source. Starting point:
+
+```
+version: '3'
+services:
+  # for running build/deploy tasks
+  deploy:
+    build:
+      context: .
+    volumes:
+      # mount working directory
+      - .:/home
+      # enable connecting to host docker socket
+      - /var/run/docker.sock:/var/run/docker.sock
+      # local docker binary usually at /usr/bin/docker or /usr/local/bin/docker
+      - ${DOCKER_BINARY}:/usr/bin/docker
+      # mount ecs utils
+      - ${UTILS_CONTEXT}:/home/utils
+      # mount AWS credential info
+      - ${HOME}/.aws/credentials:/root/.aws/credentials
+      # mount app code to src
+      - ${APP_REPO}:/home/build/app/src
+      # mount settings in src for build
+      - ./build/app/settings:/home/build/app/src/config/settings
+    env_file:
+      - .env
+    environment:
+      # override APP_REPO from local path to container path
+      - APP_REPO=build/app/src
+    entrypoint: deploy
+```
+Code examples assume that the service is named `deploy` and the `deploy` entrypoint has been set up.
+
+
 ### Terraform workspace initialization
 #### Initialize terraform workspace per environment (dev/stage/prod)
 
@@ -72,6 +107,12 @@ See [terraform docs](https://www.terraform.io/docs/providers/aws/r/route53_recor
 
 #### TODO .env file documentation
 
+
+### Dropping into bash environment (custom jobs or debugging)
+```
+docker-compose run --entrypoint=/bin/bash deploy
+```
+
 ## Usage
 
 ### Deploy entrypoint
@@ -79,8 +120,8 @@ See [terraform docs](https://www.terraform.io/docs/providers/aws/r/route53_recor
 Example usage of `bin/deploy` command line entrypoint:
 
 ```bash
-# Build images with current app code and tag images with 'latest', (TODO --env arg is required atm but doesn't do anything here)
-deploy build --env dev
+# Build images with current app code and tag images with 'latest'
+deploy build
 
 # Checkout the app code with the specified version and tag image with that tag
 deploy build --tag 1.0.0
