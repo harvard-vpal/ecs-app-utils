@@ -123,6 +123,24 @@ def deploy(env, tag=None):
         .split(), cwd=wd)
 
 
+def redeploy(env):
+    """
+    Force redeploy of ecs web service
+    TODO: redeploy of multiple services if applicable, or subsets
+    """
+    wd = TERRAFORM_WORKING_DIRECTORY
+    run(f'terraform workspace select {env}'.split(), cwd=wd)
+    # TODO change 'universal_newlines' to 'text' in python 3.7
+    cluster = run('terraform output cluster_name'.split(), cwd=wd, universal_newlines=True, stdout=subprocess.PIPE).stdout.strip()
+    service = run('terraform output service_name'.split(), cwd=wd, universal_newlines=True, stdout=subprocess.PIPE).stdout.strip()
+    boto3.client('ecs').update_service(
+        cluster=cluster,
+        service=service,
+        forceNewDeployment=True
+    )
+    print(f'Redeployed ECS service: {cluster}{service}')
+
+
 def initialize(env):
     wd = TERRAFORM_WORKING_DIRECTORY
     run('terraform workspace new {}'.format(env).split(), cwd=wd)

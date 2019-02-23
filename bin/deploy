@@ -8,8 +8,8 @@ Subcommands:
     init: Initialize terraform workspace
     build: Build app and nginx images
     push: Push image to repository
-    plan: Plan terraform changes (including updating app image version)
     apply: Apply terraform changes (including updating app image version)
+    redeploy: Force redeploy of ecs web service without changing configuration
     all: build, push and apply
 
 Usage examples:
@@ -17,23 +17,22 @@ Usage examples:
     deploy init
     deploy build --tag 1.0.0
     deploy push --tag 1.0.0
-    deploy plan --tag 1.0.0 --env dev
     deploy apply --tag 1.0.0 --env dev
     deploy all --tag 1.0.0 --env dev
 
 """
 
 import argparse
-from utils import build_images, push_images, deploy, initialize
+from utils import build_images, push_images, deploy, initialize, redeploy, fargate
 
 
-def all(tag=None, env=None, apply=None):
+def all(tag=None, env=None):
     """
     functionality for 'all' subcommand
     """
     build_images(tag=tag)
     push_images(tag=tag)
-    deploy(env=env, tag=tag, apply=apply)
+    deploy(env=env, tag=tag)
 
 
 def create_parser():
@@ -49,7 +48,7 @@ def create_parser():
     env_parser.add_argument('--env', type=str, required=True, help='label of environment to deploy to')
 
     # init
-    parser_init = subparsers.add_parser('init', description='Initialize terraform workspace')
+    parser_init = subparsers.add_parser('init', parents=[env_parser], description='Initialize terraform workspace')
     parser_init.set_defaults(func=initialize)
 
     # build
@@ -60,13 +59,13 @@ def create_parser():
     parser_push = subparsers.add_parser('push', parents=[tag_parser], description='Push image')
     parser_push.set_defaults(func=push_images)
 
-    # plan
-    parser_plan = subparsers.add_parser('plan', parents=[tag_parser, env_parser], description='Terraform plan')
-    parser_plan.set_defaults(func=deploy)
-
     # apply
     parser_apply = subparsers.add_parser('apply', parents=[tag_parser, env_parser], description='Terraform apply')
     parser_apply.set_defaults(func=deploy)
+
+    # redeploy
+    parser_apply = subparsers.add_parser('redeploy', parents=[env_parser], description='Redeploy web service')
+    parser_apply.set_defaults(func=redeploy)
 
     # all
     parser_all = subparsers.add_parser('all', parents=[tag_parser, env_parser], description='Build, push and terraform apply')
