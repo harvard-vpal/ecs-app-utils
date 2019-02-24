@@ -10,8 +10,7 @@ import boto3
 logger = logging.getLogger(__name__)
 
 # relative path containing terraform config
-# TODO make this configurable
-TERRAFORM_WORKING_DIRECTORY = 'terraform'
+TERRAFORM_WORKING_DIRECTORY = os.environ.get('TERRAFORM_DIRECTORY', 'terraform')
 
 # Uses build/app/src as build context by default, but a relative subdirectory within app source can be specified
 APP_REPO = os.environ['APP_REPO']
