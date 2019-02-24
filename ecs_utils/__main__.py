@@ -23,7 +23,7 @@ Usage examples:
 """
 
 import argparse
-from utils import build_images, push_images, deploy, initialize, redeploy, fargate
+from .commands import build_images, push_images, deploy, initialize, redeploy, fargate
 
 
 def all(tag=None, env=None):
@@ -74,6 +74,5 @@ def create_parser():
     return parser
 
 
-if __name__ == '__main__':
-    args = vars(create_parser().parse_args())
-    args.pop('func')(**args)
+args = vars(create_parser().parse_args())
+args.pop('func')(**args)

@@ -216,3 +216,11 @@ def checkout_context(target_ref, repo_path=None):
         checkout(current_ref, repo_path)
 
 
+def fargate(cmd, tag=None):
+    """
+    Run something on fargate
+    :param cmd: command arguments to run
+    :param tag: optional app image tag to use
+    :return:
+    """
+    print(f'executing fargate command {cmd}')

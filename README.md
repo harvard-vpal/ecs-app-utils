@@ -30,6 +30,9 @@ The Terraform config assumes a couple of AWS resources are manually created prio
 * SSL certificate (`ssl_certificate_arm` is the ARN of the certificate)
 * Cloudwatch log group
 
+### Environment variables
+* `UTILS_CONTEXT`: local path to ecs_utils package
+
 ### Recommended docker-compose configuration
 A docker-compose file should be created, outside of the ecs-app-utils source. Starting point:
 
@@ -60,7 +63,7 @@ services:
     environment:
       # override APP_REPO from local path to container path
       - APP_REPO=build/app/src
-    entrypoint: deploy
+    entrypoint: python -m ecs_utils
 ```
 Code examples assume that the service is named `deploy` and the `deploy` entrypoint has been set up.
 
