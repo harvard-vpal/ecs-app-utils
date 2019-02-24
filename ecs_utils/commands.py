@@ -123,6 +123,31 @@ def deploy(env, tag=None):
         .split(), cwd=wd)
 
 
+def switch_terraform_env(env):
+    run(f'terraform workspace select {env}'.split(), cwd=TERRAFORM_WORKING_DIRECTORY)
+
+
+def fetch_terraform_output(name, env=None):
+    """
+    Get terraform output variable
+    :param name:
+    :param env:
+    :return:
+    """
+    if env:
+        switch_terraform_env(env)
+
+    data = json.loads(
+        run(
+            f'terraform output -json {name}'.split(),
+            cwd=TERRAFORM_WORKING_DIRECTORY,
+            universal_newlines=True,  # TODO change 'universal_newlines' to 'text' in python 3.7
+            stdout=subprocess.PIPE
+        ).stdout
+    )
+    return data['value']
+
+
 def redeploy(env):
     """
     Force redeploy of ecs web service
