@@ -1,17 +1,18 @@
 import os
 import logging
+import json
 import subprocess
 from subprocess import run
 import docker
 from git import Repo, TagReference, Head
 from contextlib import contextmanager
 import boto3
+from .fargate import FargateTask
 
 logger = logging.getLogger(__name__)
 
 # relative path containing terraform config
-# TODO make this configurable
-TERRAFORM_WORKING_DIRECTORY = 'terraform'
+TERRAFORM_WORKING_DIRECTORY = os.environ.get('TERRAFORM_DIRECTORY', 'terraform')
 
 # Uses build/app/src as build context by default, but a relative subdirectory within app source can be specified
 APP_REPO = os.environ['APP_REPO']
@@ -123,6 +124,31 @@ def deploy(env, tag=None):
         .split(), cwd=wd)
 
 
+def switch_terraform_env(env):
+    run(f'terraform workspace select {env}'.split(), cwd=TERRAFORM_WORKING_DIRECTORY)
+
+
+def fetch_terraform_output(name, env=None):
+    """
+    Get terraform output variable
+    :param name:
+    :param env:
+    :return:
+    """
+    if env:
+        switch_terraform_env(env)
+
+    data = json.loads(
+        run(
+            f'terraform output -json {name}'.split(),
+            cwd=TERRAFORM_WORKING_DIRECTORY,
+            universal_newlines=True,  # TODO change 'universal_newlines' to 'text' in python 3.7
+            stdout=subprocess.PIPE
+        ).stdout
+    )
+    return data['value']
+
+
 def redeploy(env):
     """
     Force redeploy of ecs web service
@@ -130,9 +156,8 @@ def redeploy(env):
     """
     wd = TERRAFORM_WORKING_DIRECTORY
     run(f'terraform workspace select {env}'.split(), cwd=wd)
-    # TODO change 'universal_newlines' to 'text' in python 3.7
-    cluster = run('terraform output cluster_name'.split(), cwd=wd, universal_newlines=True, stdout=subprocess.PIPE).stdout.strip()
-    service = run('terraform output service_name'.split(), cwd=wd, universal_newlines=True, stdout=subprocess.PIPE).stdout.strip()
+    cluster = fetch_terraform_output('cluster_name')
+    service = fetch_terraform_output('service_name')
     boto3.client('ecs').update_service(
         cluster=cluster,
         service=service,
@@ -216,11 +241,23 @@ def checkout_context(target_ref, repo_path=None):
         checkout(current_ref, repo_path)
 
 
-def fargate(cmd, tag=None):
+def fargate(cmd, tag=None, env=None):
     """
     Run something on fargate
     :param cmd: command arguments to run
     :param tag: optional app image tag to use
     :return:
     """
-    print(f'executing fargate command {cmd}')
+    if env:
+        switch_terraform_env(env)
+    task = FargateTask(
+        command=cmd,
+        container_overrides={'memory': 512},
+        cluster=fetch_terraform_output('cluster_name'),
+        subnets=[fetch_terraform_output('subnet_ids')[0]],
+        task_definition= fetch_terraform_output('job_task_definition_family'),
+        container_name='app',
+        security_groups=[fetch_terraform_output('security_group')],
+    )
+    print(f'Running "{cmd}" on Fargate cluster: {task.cluster}: {task.task_id}')
+    print(f'View status: https://console.aws.amazon.com/ecs/home?region=us-east-1#/clusters/{task.cluster}/tasks/{task.task_id}/details')
