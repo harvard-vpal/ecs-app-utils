@@ -71,6 +71,11 @@ def create_parser():
     parser_all = subparsers.add_parser('all', parents=[tag_parser, env_parser], description='Build, push and terraform apply')
     parser_all.set_defaults(func=all)
 
+    # fargate
+    parser_fargate = subparsers.add_parser('fargate', parents=[tag_parser, env_parser], description='run task on fargate')
+    parser_fargate.add_argument('cmd', nargs='*', help='cmd args to run via fargate')
+    parser_fargate.set_defaults(func=fargate)
+
     return parser
 
 

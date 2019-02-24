@@ -7,6 +7,7 @@ import docker
 from git import Repo, TagReference, Head
 from contextlib import contextmanager
 import boto3
+from .fargate import FargateTask
 
 logger = logging.getLogger(__name__)
 
@@ -241,11 +242,23 @@ def checkout_context(target_ref, repo_path=None):
         checkout(current_ref, repo_path)
 
 
-def fargate(cmd, tag=None):
+def fargate(cmd, tag=None, env=None):
     """
     Run something on fargate
     :param cmd: command arguments to run
     :param tag: optional app image tag to use
     :return:
     """
-    print(f'executing fargate command {cmd}')
+    if env:
+        switch_terraform_env(env)
+    task = FargateTask(
+        command=cmd,
+        container_overrides={'memory': 512},
+        cluster=fetch_terraform_output('cluster_name'),
+        subnets=[fetch_terraform_output('subnet_ids')[0]],
+        task_definition= fetch_terraform_output('job_task_definition_family'),
+        container_name='app',
+        security_groups=[fetch_terraform_output('security_group')],
+    )
+    print(f'Running "{cmd}" on Fargate cluster: {task.cluster}: {task.task_id}')
+    print(f'View status: https://console.aws.amazon.com/ecs/home?region=us-east-1#/clusters/{task.cluster}/tasks/{task.task_id}/details')
