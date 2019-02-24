@@ -156,9 +156,8 @@ def redeploy(env):
     """
     wd = TERRAFORM_WORKING_DIRECTORY
     run(f'terraform workspace select {env}'.split(), cwd=wd)
-    # TODO change 'universal_newlines' to 'text' in python 3.7
-    cluster = run('terraform output cluster_name'.split(), cwd=wd, universal_newlines=True, stdout=subprocess.PIPE).stdout.strip()
-    service = run('terraform output service_name'.split(), cwd=wd, universal_newlines=True, stdout=subprocess.PIPE).stdout.strip()
+    cluster = fetch_terraform_output('cluster_name')
+    service = fetch_terraform_output('service_name')
     boto3.client('ecs').update_service(
         cluster=cluster,
         service=service,
