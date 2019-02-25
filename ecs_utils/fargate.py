@@ -1,5 +1,9 @@
 import os
 import boto3
+import logging
+
+
+log = logging.getLogger(__name__)
 
 
 class FargateTask:
@@ -41,22 +45,25 @@ class FargateTask:
         :return:
         """
         client = boto3.client('ecs')
-        # create task
-        r = client.run_task(
+        run_task_params = dict(
             cluster=self.cluster,
             taskDefinition=self.task_definition,
             launchType='FARGATE',
             overrides={
-                'containerOverrides':[self.build_container_override()],
+                'containerOverrides': [self.build_container_override()],
             },
             networkConfiguration={
-                'awsvpcConfiguration':{
-                    'subnets':self.subnets,
-                    'assignPublicIp':'ENABLED',  # see step 8: https://docs.aws.amazon.com/AmazonECS/latest/developerguide/launch_container_instance.html
-                    'securityGroups':self.security_groups
+                'awsvpcConfiguration': {
+                    'subnets': self.subnets,
+                    'assignPublicIp': 'ENABLED',
+                # see step 8: https://docs.aws.amazon.com/AmazonECS/latest/developerguide/launch_container_instance.html
+                    'securityGroups': self.security_groups
                 }
             }
         )
+        # create task
+        log.debug(f'Run task params: {run_task_params}')
+        r = client.run_task(**run_task_params)
         return r
 
     @property
