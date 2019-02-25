@@ -163,7 +163,7 @@ def redeploy(env):
         service=service,
         forceNewDeployment=True
     )
-    print(f'Redeployed ECS service: {cluster}{service}')
+    print(f'Redeployed ECS service: {cluster}/{service}')
 
 
 def initialize(env):
@@ -259,5 +259,5 @@ def fargate(cmd, tag=None, env=None):
         container_name='app',
         security_groups=[fetch_terraform_output('security_group')],
     )
-    print(f'Running "{cmd}" on Fargate cluster: {task.cluster}: {task.task_id}')
+    print(f'Running "{task.command_string}" on Fargate cluster: {task.cluster}: {task.task_id}')
     print(f'View status: https://console.aws.amazon.com/ecs/home?region=us-east-1#/clusters/{task.cluster}/tasks/{task.task_id}/details')
