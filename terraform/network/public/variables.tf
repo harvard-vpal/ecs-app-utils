@@ -29,11 +29,11 @@ variable "short_project_label" {
 }
 
 output "listener_arn" {
-  value = "${aws_alb_listener.main.arn}"
+  value = "${module.network.listener_arn}"
 }
 
 output "target_group_arn" {
-  value = "${aws_alb_target_group.main.arn}"
+  value = "${module.network.target_group_arn}"
 }
 
 output "security_group_id" {
