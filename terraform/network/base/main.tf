@@ -1,4 +1,5 @@
 # Network module to set up web routing resources for ecs service
+# Load balancer security group is created outside of module, for cases that require custom network rules
 
 
 data "aws_subnet_ids" "main" {
@@ -9,40 +10,40 @@ data "aws_route53_zone" "main" {
   name         = "${var.hosted_zone}"
 }
 
-resource "aws_security_group" "load_balancer" {
-  description = "controls access to the application load balancer"
-
-  vpc_id = "${var.vpc_id}"
-  name_prefix   = "alb"
-
-  ingress {
-    protocol    = "tcp"
-    from_port   = 443
-    to_port     = 443
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  ingress {
-    protocol    = "tcp"
-    from_port   = 80
-    to_port     = 80
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  egress {
-    from_port = 0
-    to_port   = 0
-    protocol  = "-1"
-
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-}
+//resource "aws_security_group" "load_balancer" {
+//  description = "controls access to the application load balancer"
+//
+//  vpc_id = "${var.vpc_id}"
+//  name_prefix   = "alb"
+//
+//  ingress {
+//    protocol    = "tcp"
+//    from_port   = 443
+//    to_port     = 443
+//    cidr_blocks = ["0.0.0.0/0"]
+//  }
+//
+//  ingress {
+//    protocol    = "tcp"
+//    from_port   = 80
+//    to_port     = 80
+//    cidr_blocks = ["0.0.0.0/0"]
+//  }
+//
+//  egress {
+//    from_port = 0
+//    to_port   = 0
+//    protocol  = "-1"
+//
+//    cidr_blocks = ["0.0.0.0/0"]
+//  }
+//}
 
 
 resource "aws_alb" "main" {
   name            = "${var.project}-${var.env_label}"
   subnets         = ["${data.aws_subnet_ids.main.ids}"]
-  security_groups = ["${aws_security_group.load_balancer.id}"]
+  security_groups = ["${var.security_group_id}"]
 }
 
 resource "aws_alb_listener" "main" {
