@@ -46,3 +46,8 @@ variable "target_group_arn" {
 variable "execution_role_arn" {
   description = "ARN of ecs task execution role"
 }
+
+variable "load_balancer_container_name" {
+  description = "The name of the container to associate with the load balancer"
+  default = "nginx"
+}
