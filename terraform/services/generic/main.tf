@@ -4,10 +4,6 @@ data "aws_subnet_ids" "main" {
   vpc_id = "${var.vpc_id}"
 }
 
-data "aws_iam_role" "task_execution" {
-  name = "ecsTaskExecutionRole"
-}
-
 resource "aws_ecs_task_definition" "main" {
   family                = "${var.name}"
   container_definitions = "${var.container_definitions}"
