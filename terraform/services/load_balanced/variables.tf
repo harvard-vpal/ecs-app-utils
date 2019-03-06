@@ -51,3 +51,8 @@ variable "load_balancer_container_name" {
   description = "The name of the container to associate with the load balancer"
   default = "nginx"
 }
+
+variable "load_balancer_container_port" {
+  description = "The port on the container to associate with the load balancer"
+  default = 80
+}
