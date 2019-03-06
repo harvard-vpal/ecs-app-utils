@@ -11,7 +11,7 @@ data "aws_iam_role" "task_execution" {
 resource "aws_ecs_task_definition" "main" {
   family                = "${var.name}"
   container_definitions = "${var.container_definitions}"
-  execution_role_arn = "${data.aws_iam_role.task_execution.arn}" # required for awslogs
+  execution_role_arn = "${var.execution_role_arn}" # required for awslogs
   task_role_arn = "${var.role_arn}"
   network_mode = "awsvpc"
   memory = "${var.memory}"

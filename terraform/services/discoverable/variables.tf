@@ -46,3 +46,7 @@ variable "service_discovery_namespace_id" {
 variable "service_label" {
   description = "service label to use for service discovery"
 }
+
+variable "execution_role_arn" {
+  description = "ARN of ecs task execution role"
+}

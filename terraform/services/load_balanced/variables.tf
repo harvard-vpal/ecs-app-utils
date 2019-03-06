@@ -42,3 +42,7 @@ variable "count" {
 variable "target_group_arn" {
   description = "ARN of ALB target group to associate service with"
 }
+
+variable "execution_role_arn" {
+  description = "ARN of ecs task execution role"
+}
