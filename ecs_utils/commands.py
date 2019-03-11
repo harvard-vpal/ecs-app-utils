@@ -83,7 +83,9 @@ def build_images(tag=None):
     else:
         with checkout_context(tag):
             build_app_image(tag)
-    build_nginx_image(tag)
+    # presence of NGINX_IMAGE env variable determines whether nginx image is relevant
+    if os.environ.get('NGINX_IMAGE'):
+        build_nginx_image(tag)
 
 
 def aws_ecr_login():
@@ -102,26 +104,30 @@ def push_images(tag='latest'):
         f"{os.environ['APP_IMAGE']}",
         tag=tag
     )
-    print("Pushing nginx image...")
-    client.images.push(
-        f"{os.environ['NGINX_IMAGE']}",
-        tag=tag
-    )
+    if os.environ.get('NGINX_IMAGE'):
+        print("Pushing nginx image...")
+        client.images.push(
+            f"{os.environ['NGINX_IMAGE']}",
+            tag=tag
+        )
 
 
 def deploy(env, tag=None):
     tag = tag or 'latest'
     wd = TERRAFORM_WORKING_DIRECTORY
     app_image = os.environ['APP_IMAGE']
-    nginx_image = os.environ['NGINX_IMAGE']
     action = 'apply'  # vs plan
 
     run('terraform workspace select {}'.format(env).split(), cwd=wd)
-    run(f'terraform {action} '
+    cmd = (f'terraform {action} '
         f'-var-file=terraform.{env}.tfvars '
-        f'-var app_image={app_image}:{tag} '
-        f'-var nginx_image={nginx_image}:{tag} '
-        .split(), cwd=wd)
+        f'-var app_image={app_image}:{tag} ')
+
+    if os.environ.get('NGINX_IMAGE'):
+        nginx_image = os.environ['NGINX_IMAGE']
+        cmd += f'-var nginx_image={nginx_image}:{tag} '
+
+    run(cmd.split(), cwd=wd)
 
 
 def switch_terraform_env(env):
