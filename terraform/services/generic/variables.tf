@@ -38,3 +38,7 @@ variable "count" {
   description = "Desired task count"
   default = 1
 }
+
+variable "execution_role_arn" {
+  description = "ARN of ecs task execution role"
+}
