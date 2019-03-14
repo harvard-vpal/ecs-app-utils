@@ -32,6 +32,16 @@ variable "security_group_id" {
   description = "load balancer security group id"
 }
 
+variable "container_port" {
+  description = "container port for target group"
+  default = 80
+}
+
+variable "health_check_path" {
+  description = "health check path"
+  default = "/health/"
+}
+
 output "listener_arn" {
   value = "${aws_alb_listener.main.arn}"
 }

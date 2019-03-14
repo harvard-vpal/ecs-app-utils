@@ -28,6 +28,16 @@ variable "short_project_label" {
   description = "short project label that is 6 chars or fewer"
 }
 
+variable "container_port" {
+  description = "container port for target group"
+  default = 80
+}
+
+variable "health_check_path" {
+  description = "health check path"
+  default = "/health/"
+}
+
 output "listener_arn" {
   value = "${module.network.listener_arn}"
 }

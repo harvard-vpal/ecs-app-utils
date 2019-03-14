@@ -43,4 +43,6 @@ module "network" {
   project = "${var.project}"
   short_project_label = "${var.short_project_label}"
   security_group_id = "${aws_security_group.load_balancer.id}"
+  container_port = "${var.container_port}"
+  health_check_path = "${var.health_check_path}"
 }
