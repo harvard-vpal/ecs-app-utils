@@ -80,13 +80,13 @@ resource "aws_route53_record" "main" {
 
 resource "aws_alb_target_group" "main" {
   name_prefix = "${var.short_project_label}"  # using name_prefix instead of name used because of create_before_destroy option
-  port        = 80
+  port        = "${var.container_port}"
   protocol    = "HTTP"
   target_type = "ip"  # required for use of awsvpc task networking mode
   vpc_id      = "${var.vpc_id}"
 
   health_check {
-    path = "/health/"
+    path = "${var.health_check_path}"
   }
 
   # Resolves: (Error deleting Target Group: Target group is currently in use by a listener or a rule)
