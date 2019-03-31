@@ -7,6 +7,8 @@ Utilities for deploying Django app (nginx/app, rabbitmq, celery worker) with AWS
 ### Terraform modules
 * `terraform/`
     * `network/` - load balancer, target group, routing, other network resources
+        * `base` - load balancer policy not included - useful for utilizing custom inbound traffic rules
+        * `public` - load balancer policy included that allows all inbound traffic
     * `services/`
         * `load_balanced` - ECS service connected to load balancer target group (e.g. nginx/web)
         * `discoverable` - ECS service with service discovery (e.g. RabbitMQ)
@@ -66,6 +68,44 @@ services:
     entrypoint: python -m ecs_utils
 ```
 Code examples assume that the service is named `deploy` and the `deploy` entrypoint has been set up.
+
+### Using terraform modules
+Typical outline:
+* Define custom security groups and policies
+* Use network module
+* Define web container definition
+* Use web service module
+* Define other container definitions + use more service modules if applicable
+
+Required terraform outputs to expose in order to use redeploy or fargate commands:
+* `cluster_name` - used in redeploy and fargate commands
+* `service_name` - used in redeploy command
+* `security_group` - used in fargate command
+* `subnet_ids` - used in fargate command
+* `job_task_definition_family` - used in fargate command
+
+e.g.
+```
+output "cluster_name" {
+  value = "${var.cluster_name}"
+}
+
+output "service_name" {
+  value = "${module.web_service.service_name}"
+}
+
+output "security_group" {
+  value = "${aws_security_group.ecs_service.id}"
+}
+
+output "subnet_ids" {
+  value = "${data.aws_subnet_ids.main.ids}"
+}
+
+output "job_task_definition_family" {
+  value = "${aws_ecs_task_definition.task.family}"
+}
+```
 
 
 ### Terraform workspace initialization
