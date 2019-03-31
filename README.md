@@ -13,6 +13,7 @@ Utilities for deploying Django app (nginx/app, rabbitmq, celery worker) with AWS
         * `load_balanced` - ECS service connected to load balancer target group (e.g. nginx/web)
         * `discoverable` - ECS service with service discovery (e.g. RabbitMQ)
         * `generic` - ECS service with no load balancer or service discovery (e.g. Celery worker)
+    * `execution_role` - task execution role where custom policy can be specified. Usually used to specify custom policy to allow access to SSM params if using ECS secrets in container definitions.
 
 ## Getting started
 
