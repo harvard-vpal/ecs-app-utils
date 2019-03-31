@@ -172,9 +172,27 @@ def redeploy(env):
     print(f'Redeployed ECS service: {cluster}/{service}')
 
 
-def initialize(env):
+def create(env):
+    """
+    Create and initialize new terraform workspace
+    
+    :param env: workspace name
+    :type env: str
+    """
     wd = TERRAFORM_WORKING_DIRECTORY
     run('terraform workspace new {}'.format(env).split(), cwd=wd)
+    run('terraform workspace select {}'.format(env).split(), cwd=wd)
+    run('terraform init'.split(), cwd=wd)
+
+
+def initialize(env):
+    """
+    Run terraform init for workspace (to fetch modules, etc)
+    
+    :param env: workspace name
+    :type env: str
+    """
+    wd = TERRAFORM_WORKING_DIRECTORY
     run('terraform workspace select {}'.format(env).split(), cwd=wd)
     run('terraform init'.split(), cwd=wd)
 
