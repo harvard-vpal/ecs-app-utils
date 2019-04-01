@@ -69,6 +69,7 @@ def create_parser():
 
     # redeploy
     parser_apply = subparsers.add_parser('redeploy', parents=[env_parser], description='Redeploy web service')
+    parser_apply.add_argument('services', nargs='*', help='list of services to redeploy (e.g. "web" or "web rabbit worker")')
     parser_apply.set_defaults(func=redeploy)
 
     # all

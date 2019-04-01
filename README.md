@@ -3,6 +3,8 @@
 Utilities for deploying Django app (nginx/app, rabbitmq, celery worker) with AWS ECS Fargate.
 
 ## Contents
+### `ecs-utils` package
+CLI helper for common DevOps tasks (docker build, docker push, terraform apply, ECS service redeploy) when working with an application deployed on ECS.
 
 ### Terraform modules
 * `terraform/`
@@ -158,7 +160,7 @@ Typical outline:
 
 Required terraform outputs to expose in order to use redeploy or fargate commands:
 * `cluster_name` - used in redeploy and fargate commands
-* `service_name` - used in redeploy command
+* `services` - map of service labels to rendered service name; used in redeploy command
 * `security_group` - used in fargate command
 * `subnet_ids` - used in fargate command
 * `job_task_definition_family` - used in fargate command
@@ -169,8 +171,13 @@ output "cluster_name" {
   value = "${var.cluster_name}"
 }
 
-output "service_name" {
-  value = "${module.web_service.service_name}"
+output "services" {
+  description = "mapping from short service name to rendered service name"
+  value = {
+    "web" = "${var.project}-${var.env_label}-web"
+    "rabbit" = "${var.project}-${var.env_label}-rabbit"
+    "worker" = "${var.project}-${var.env_label}-worker"
+  }
 }
 
 output "security_group" {
@@ -252,4 +259,7 @@ deploy apply --tag 1.0.0 --env dev
 
 # Build, push, and apply
 deploy all --tag 1.0.0 --env dev
+
+# Redeploy services (force restart of services, even if no config changes)
+deploy redeploy --env dev web worker
 ```
