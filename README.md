@@ -63,10 +63,9 @@ services:
       - ${DOCKER_BINARY}:/usr/bin/docker
       # mount AWS credential info
       - ${HOME}/.aws/credentials:/root/.aws/credentials
-
-      # mount settings in src for build
-      # - ./build/app/settings:/home/build/app/src/bridge_adaptivity/config/settings/eb
-
+      # (optional depending on docker-compose.build)
+      # mount app code to src
+      - ${APP_REPO}:/home/build/app_base/src
       # (optional) mount ecs utils python package from local copy
       - ${ECS_UTILS_CONTEXT}/ecs_utils:/src/ecs-utils/ecs_utils
       # (optional) mount ecs utils terraform modules from local copy
@@ -74,7 +73,6 @@ services:
     env_file:
       - .env
     entrypoint: python -m ecs_utils
-
 ```
 
 #### `build/docker-compose.build.yml`
