@@ -85,33 +85,43 @@ def fetch_terraform_output(name, env=None):
     """
     if env:
         switch_terraform_env(env)
-
-    data = json.loads(
-        run(
-            f'terraform output -json {name}'.split(),
-            cwd=TERRAFORM_WORKING_DIRECTORY,
-            universal_newlines=True,  # TODO change 'universal_newlines' to 'text' in python 3.7
-            stdout=subprocess.PIPE
-        ).stdout
-    )
+    try:
+        data = json.loads(
+            run(
+                f'terraform output -json {name}'.split(),
+                cwd=TERRAFORM_WORKING_DIRECTORY,
+                universal_newlines=True,  # TODO change 'universal_newlines' to 'text' in python 3.7
+                stdout=subprocess.PIPE
+            ).stdout
+        )
+    except json.JSONDecodeError:
+        raise ValueError(f'Output "{name}" not available in Terraform state')
     return data['value']
 
 
-def redeploy(env):
+def redeploy(env, services=None):
     """
-    Force redeploy of ecs web service
-    TODO: redeploy of multiple services if applicable, or subsets
+    Force redeploy of ecs services
+    Assumes services are named {project_name}-{env_label}-{short_service_name}, e.g. bridge-prod-web
+    :param env: environment label
+    :param services: list of service names (e.g. ["web", "rabbit", "worker"] to redeploy) referenced by keys in "services" terraform output variable.
+        If not specified, redeploys all services listed in "services" terraform output variable.
     """
     wd = TERRAFORM_WORKING_DIRECTORY
     run(f'terraform workspace select {env}'.split(), cwd=wd)
     cluster = fetch_terraform_output('cluster_name')
-    service = fetch_terraform_output('service_name')
-    boto3.client('ecs').update_service(
-        cluster=cluster,
-        service=service,
-        forceNewDeployment=True
-    )
-    print(f'Redeployed ECS service: {cluster}/{service}')
+    app_tag = fetch_terraform_output('app_tag')
+    service_map = fetch_terraform_output('services')
+    if services is None:
+        services = service_map.keys()
+    for name in services:
+        service = service_map[name]
+        boto3.client('ecs').update_service(
+            cluster=cluster,
+            service=service,
+            forceNewDeployment=True
+        )
+        print(f'Redeployed ECS service: {cluster}/{service} ({app_tag})')
 
 
 def create(env):
