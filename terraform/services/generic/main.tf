@@ -19,7 +19,7 @@ resource "aws_ecs_service" "main" {
   name            = "${var.name}"
   cluster         = "${var.cluster_name}"
   task_definition = "${aws_ecs_task_definition.main.arn}"
-  desired_count   = 1
+  desired_count   = "${var.count}"
   launch_type     = "FARGATE"
 
   network_configuration {
