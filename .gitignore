@@ -4,6 +4,7 @@ __pycache__/
 
 # IDE
 .idea/
+.vscode/
 
 # Custom folders
 archive/

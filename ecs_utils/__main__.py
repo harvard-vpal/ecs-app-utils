@@ -4,8 +4,8 @@
 Command line interface entrypoint for common build/deployment tasks.
 
 Subcommands:
-
-    init: Initialize terraform workspace
+    create: Create terraform workspace
+    init: Initialize terraform workspace (workspace must be created first)
     build: Build app and nginx images
     push: Push image to repository
     apply: Apply terraform changes (including updating app image version)
@@ -13,8 +13,8 @@ Subcommands:
     all: build, push and apply
 
 Usage examples:
-
-    deploy init
+    deploy create --env dev
+    deploy init --env dev
     deploy build --tag 1.0.0
     deploy push --tag 1.0.0
     deploy apply --tag 1.0.0 --env dev
@@ -23,7 +23,7 @@ Usage examples:
 """
 
 import argparse
-from .commands import build_images, push_images, deploy, initialize, redeploy, fargate
+from .commands import build_images, push_images, deploy, create, initialize, redeploy, fargate
 
 
 def all(tag=None, env=None):
@@ -47,8 +47,12 @@ def create_parser():
     env_parser = argparse.ArgumentParser(add_help=False)
     env_parser.add_argument('--env', type=str, required=True, help='label of environment to deploy to')
 
+    # create
+    parser_create = subparsers.add_parser('create', parents=[env_parser], description='Create and initialize terraform workspace')
+    parser_create.set_defaults(func=create)
+
     # init
-    parser_init = subparsers.add_parser('init', parents=[env_parser], description='Initialize terraform workspace')
+    parser_init = subparsers.add_parser('init', parents=[env_parser], description='Reinitialize terraform workspace')
     parser_init.set_defaults(func=initialize)
 
     # build
