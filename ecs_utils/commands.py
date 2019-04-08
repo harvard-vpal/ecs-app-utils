@@ -186,12 +186,11 @@ def ssm_shell(tag, params=[]):
     get_ssm_param = lambda x: boto3.client('ssm').get_parameter(Name=x)['Parameter']['Value']
     env_vars = {x[0]:get_ssm_param(x[2]) for x in (pair.partition('=') for pair in params)}
 
-    run_cmd = [
+    cmd = ' '.join([
         "docker", "run", "-it",
         *(chain.from_iterable(('-e', k) for k in env_vars)),
         f"{APP_IMAGE}:{APP_TAG}",
         "bash"
-    ]
-    # print(run_cmd)
-    print(' '.join(run_cmd))
-    run(' '.join(run_cmd), shell=True, env=env_vars)
+    ])
+    print(cmd)
+    run(cmd, shell=True, env=env_vars)
