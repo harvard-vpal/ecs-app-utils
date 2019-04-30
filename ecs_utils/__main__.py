@@ -23,7 +23,7 @@ Usage examples:
 """
 
 import argparse
-from .commands import build_images, push_images, deploy, create, initialize, redeploy, fargate, ssm_shell
+from .commands import build_images, push_images, deploy, create, initialize, redeploy, fargate
 
 
 def all(tag=None, env=None):
@@ -81,11 +81,8 @@ def create_parser():
     parser_fargate.add_argument('cmd', nargs='*', help='cmd args to run via fargate')
     parser_fargate.set_defaults(func=fargate)
 
-    # shell
-    parser_shell = subparsers.add_parser('shell', parents=[tag_parser], description='shell that loads ssm params')
-    parser_shell.add_argument('-e', action='append', dest='params', help='{env var name}={ssm parameter name}')  # can be specified multiple times
-    parser_shell.set_defaults(func=ssm_shell)
     return parser
+
 
 args = vars(create_parser().parse_args())
 args.pop('func')(**args)

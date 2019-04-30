@@ -3,7 +3,6 @@ import logging
 import json
 import subprocess
 from subprocess import run
-from itertools import chain
 import docker
 from git import Repo, TagReference, Head
 from contextlib import contextmanager
@@ -170,28 +169,3 @@ def fargate(cmd, tag=None, env=None):
     )
     print(f'Running "{task.command_string}" on Fargate cluster: {task.cluster}: {task.task_id}')
     print(f'View status: https://console.aws.amazon.com/ecs/home?region=us-east-1#/clusters/{task.cluster}/tasks/{task.task_id}/details')
-
-
-def ssm_shell(tag, params=[]):
-    """Creates a bash shell using app image with environment variables from AWS SSM populated
-    
-    :param tag: app image version tag to use
-    :param tag: str
-    :param params: list of environment variables to populate and respective ssm parameter keys, with format '{env var name}={ssm param name}'
-    :param params: list, optional
-    """
-
-    APP_IMAGE = os.environ['APP_IMAGE']
-    APP_TAG = tag
-    get_ssm_param = lambda x: boto3.client('ssm').get_parameter(Name=x)['Parameter']['Value']
-    env_vars = {x[0]:get_ssm_param(x[2]) for x in (pair.partition('=') for pair in params)}
-
-    run_cmd = [
-        "docker", "run", "-it",
-        *(chain.from_iterable(('-e', k) for k in env_vars)),
-        f"{APP_IMAGE}:{APP_TAG}",
-        "bash"
-    ]
-    # print(run_cmd)
-    print(' '.join(run_cmd))
-    run(' '.join(run_cmd), shell=True, env=env_vars)
