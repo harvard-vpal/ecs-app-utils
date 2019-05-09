@@ -34,7 +34,7 @@ def build_images(tag=None):
     aws_ecr_login()
     run(
         f'docker-compose -f build/docker-compose.build.yml build',
-        env={'APP_TAG':tag},
+        env={'APP_TAG':tag} if tag else None,
         shell=True
     )
 
@@ -49,7 +49,7 @@ def push_images(tag='latest'):
     aws_ecr_login()
     run(
         f'docker-compose -f build/docker-compose.build.yml push',
-        env={'APP_TAG':tag},
+        env={'APP_TAG':tag} if tag else None,
         shell=True
     )
 
