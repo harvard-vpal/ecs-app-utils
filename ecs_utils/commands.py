@@ -3,8 +3,6 @@ import logging
 import json
 import subprocess
 from subprocess import run
-import docker
-from git import Repo, TagReference, Head
 from contextlib import contextmanager
 import boto3
 from .fargate import FargateTask
