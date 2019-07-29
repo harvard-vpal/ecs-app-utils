@@ -43,7 +43,7 @@ variable "health_check_path" {
 }
 
 output "listener_arn" {
-  value = "${aws_alb_listener.main.arn}"
+  value = "${aws_alb_listener.https.arn}"
 }
 
 output "target_group_arn" {
