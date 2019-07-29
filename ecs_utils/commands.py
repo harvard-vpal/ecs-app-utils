@@ -3,8 +3,6 @@ import logging
 import json
 import subprocess
 from subprocess import run
-import docker
-from git import Repo, TagReference, Head
 from contextlib import contextmanager
 import boto3
 from .fargate import FargateTask
@@ -152,6 +150,7 @@ def initialize(env):
 def fargate(cmd, tag=None, env=None):
     """
     Run something on fargate
+    Requires following terraform outputs to be configured: cluster_name, subnet_ids, job_task_definition_family, security_group
     :param cmd: command arguments to run
     :param tag: optional app image tag to use
     :return:
