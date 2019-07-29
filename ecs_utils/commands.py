@@ -150,6 +150,7 @@ def initialize(env):
 def fargate(cmd, tag=None, env=None):
     """
     Run something on fargate
+    Requires following terraform outputs to be configured: cluster_name, subnet_ids, job_task_definition_family, security_group
     :param cmd: command arguments to run
     :param tag: optional app image tag to use
     :return:
