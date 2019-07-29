@@ -16,7 +16,7 @@ resource "aws_alb" "main" {
   security_groups = ["${var.security_group_id}"]
 }
 
-resource "aws_alb_listener" "main" {
+resource "aws_alb_listener" "https" {
   load_balancer_arn = "${aws_alb.main.id}"
   port              = "443"
   protocol          = "HTTPS"
@@ -30,6 +30,22 @@ resource "aws_alb_listener" "main" {
       content_type = "text/plain"
       message_body = "Service Temporarily Unavailable (ALB Default Action)"
       status_code  = "503"
+    }
+  }
+}
+
+resource "aws_alb_listener" "http" {
+  load_balancer_arn = "${aws_alb.main.id}"
+  port              = "80"
+  protocol          = "HTTP"
+
+  default_action {
+    type             = "redirect"
+
+    redirect {
+      port        = "443"
+      protocol    = "HTTPS"
+      status_code = "HTTP_301"
     }
   }
 }
@@ -69,7 +85,7 @@ resource "aws_alb_target_group" "main" {
 }
 
 resource "aws_alb_listener_rule" "main" {
-  listener_arn = "${aws_alb_listener.main.arn}"
+  listener_arn = "${aws_alb_listener.https.arn}"
 
   action {
     target_group_arn = "${aws_alb_target_group.main.id}"
