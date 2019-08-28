@@ -1,12 +1,54 @@
 # ECS app utils
 
-Utilities for deploying Django app (nginx/app, rabbitmq, celery worker) with AWS ECS Fargate.
+Utilities for deploying applications with AWS ECS Fargate.
 
-## Contents
-### `ecs-utils` package
+## About
+
+### Motivation
+This project came out of the need to deploy multiple containerized applications in a way that:
+* automates provisioning of instructure
+* supports the deployment of specific versions
+* supports application-specific architectures (different types of services, different network access rules)
+* supports the use and independent management of multiple environments (dev, stage, prod) for each application
+* has a consistent interface for performing common deployment tasks
+* decouples deployment configuration from application code, allowing public application code to be separated from private deployment-specific code and settings
+
+### ecs-app-utils framework
+The ecs-app-utils framework is a way of using the utilities in this repo to configure and manage the deployment of dockerized applications.
+
+Using this framework, applications can be deployed on AWS, running on ECS Fargate, which the ability to manage deployments via a command line interface.
+
+Typically, a repo will be set up containing deployment configuration for the specific deployment. This is separate from the repo containing applciation code.
+
+
+### Deployment commands
+Applications using the ecs-app-utils framework can use CLI actions to manage deployment tasks. For example:
+
+**Building application image based on github tag `1.0.1`**
+```
+bin/deploy build --tag 1.0.1
+```
+
+**Pushing application image with version 1.0.1 to image repository**
+```
+bin/deploy push --tag 1.0.1
+```
+
+**Deploying application version 1.0.1 to environment `dev`** 
+```
+bin/deploy apply --tag 1.0.1 --env dev
+```
+
+### Repo contents
+
+This repo contains common utilities that are used when configuring deployment with the ecs-app-utils framework. There are two main components:
+* `ecs-utils/`: python package implementing the CLI
+* `terraform/`: Terraform modules that can be used 
+
+#### `ecs-utils` package
 CLI helper for common DevOps tasks (docker build, docker push, terraform apply, ECS service redeploy) when working with an application deployed on ECS.
 
-### Terraform modules
+#### Terraform modules
 * `terraform/`
     * `network/` - load balancer, target group, routing, other network resources
         * `base` - load balancer policy not included - useful for utilizing custom inbound traffic rules
