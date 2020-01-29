@@ -13,10 +13,6 @@ resource "aws_ecs_task_definition" "main" {
   memory = "${var.memory}"
   cpu = "${var.cpu}"
   requires_compatibilities = ["FARGATE"]
-  provisioner "file" {
-    source      = "${var.from_folder}"
-    destination = "${var.to_folder}"
-  }
 }
 
 resource "aws_ecs_service" "main" {
@@ -30,10 +26,6 @@ resource "aws_ecs_service" "main" {
     target_group_arn = "${var.target_group_arn}"
     container_name   = "${var.load_balancer_container_name}"
     container_port   = "${var.load_balancer_container_port}"
-  }
-  provisioner "file" {
-    source      = "${var.from_folder}"
-    destination = "${var.to_folder}"
   }
   network_configuration {
     subnets = ["${data.aws_subnet_ids.main.ids}"],
